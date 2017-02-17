@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textureView"
-        android:layout_above="@+id/button2"
+        android:layout_above="@+id/videoOnlineImageButton"
         android:layout_alignParentStart="true"
         android:layout_marginBottom="31dp" />
 
@@ -18,10 +18,10 @@
         android:text="Video"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/button"
+        android:layout_alignBottom="@+id/cameraImageButton2"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="43dp"
-        android:id="@+id/button2" />
+        android:id="@+id/videoOnlineImageButton" />
 
     <Button
         android:text="Photo"
@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="49dp"
         android:layout_marginBottom="36dp"
-        android:id="@+id/button"
+        android:id="@+id/cameraImageButton2"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true" />
 </RelativeLayout>
