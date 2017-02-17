@@ -10,16 +10,25 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
+import android.media.MediaRecorder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.os.EnvironmentCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
 public class CameraActivity extends AppCompatActivity {private TextureView mTextureView;
     private CameraDevice mCameraDevice;
@@ -27,6 +36,11 @@ public class CameraActivity extends AppCompatActivity {private TextureView mText
     private HandlerThread mBackgroundHandlerThread;
     private Handler mBackgroundHandler;
     private CaptureRequest.Builder mCaptureRequestBuilder;
+    private Button mImageButton;
+    private Button mRecordButton;
+    private File mVideoFolder;
+    private String mVideoFileName;
+    private MediaRecorder mMediaRecorder;
     private CameraDevice.StateCallback mCameraDeviceStateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(CameraDevice camera) {
@@ -51,7 +65,23 @@ public class CameraActivity extends AppCompatActivity {private TextureView mText
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+        createVideoFolder();
+        mMediaRecorder = new MediaRecorder();
+
         mTextureView = (TextureView)findViewById(R.id.textureView);
+        mRecordButton = (Button)findViewById(R.id.button2);
+        mImageButton = (Button)findViewById(R.id.button);
+
+        mRecordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    createVideoFileName();
+                }catch (IOException e){
+
+                }
+            }
+        });
     }
     private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -135,12 +165,14 @@ public class CameraActivity extends AppCompatActivity {private TextureView mText
                     new CameraCaptureSession.StateCallback() {
                         @Override
                         public void onConfigured(CameraCaptureSession session) {
-                            try{
+
+                            try {
                                 session.setRepeatingRequest(mCaptureRequestBuilder.build(),
                                         null,mBackgroundHandler);
-                            }catch (CameraAccessException e){
-
+                            } catch (CameraAccessException e) {
+                                e.printStackTrace();
                             }
+
 
                         }
 
@@ -168,5 +200,31 @@ public class CameraActivity extends AppCompatActivity {private TextureView mText
         }catch (InterruptedException e){
 
         }
+    }
+
+    private void createVideoFolder(){
+        File movieFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        mVideoFolder = new File(movieFile,"camera2Video");
+        if(!mVideoFolder.exists()){
+            mVideoFolder.mkdirs();
+        }
+    }
+    private File createVideoFileName() throws IOException{
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String prepend = "Video_"+timestamp + "-";
+        File videoFile  = File.createTempFile(prepend,".mp4",mVideoFolder);
+        mVideoFileName = videoFile.getAbsolutePath();
+        return videoFile;
+    }
+    private void setupMediaRecorder()throws IOException{
+        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mMediaRecorder.setOutputFile(mVideoFileName);
+        mMediaRecorder.setVideoEncodingBitRate(1000000);
+        mMediaRecorder.setVideoFrameRate(30);
+        mMediaRecorder.setVideoSize(500,400);
+        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H263);
+        //mMediaRecorder.setOrientationHint(0);
+        mMediaRecorder.prepare();
     }
 }
